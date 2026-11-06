@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscador e Player de Drives Públicos</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            color: #4285F4; /* Azul Google */
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        /* Seção do Motor de Busca (Dork Automatizado) */
+        .search-section {
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #444;
+            background: #2a2a2a;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: #4285F4;
+        }
+
+        button {
+            padding: 12px 24px;
+            background-color: #4285F4;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 15px;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: #357ae8;
+        }
+
+        /* Seção do Player Dinâmico com CSS Customizado */
+        .player-section {
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+
+        .player-wrapper {
+            position: relative;
+            padding-bottom: 56.25%; /* Proporção 16:9 de Cinema */
+            height: 0;
+            overflow: hidden;
+            background: #000;
+            border-radius: 6px;
+            margin-top: 15px;
+            display: none; /* Só aparece quando carregar o link */
+            box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+        }
+
+        .player-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .status-msg {
+            text-align: center;
+            color: #888;
+            padding: 40px 0;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>🔍 Motor de Busca & Player GDrive Público</h1>
+            <p>Utilize inteligência de dorking para encontrar vídeos públicos no Google Drive e assista diretamente aqui.</p>
+        </header>
+
+        <!-- PASSO 1: BUSCADOR GLOBAL -->
+        <div class="search-section">
+            <h3>Passo 1: Buscar vídeos abertos na Web</h3>
+            <div class="input-group">
+                <input type="text" id="keyword" placeholder="Ex: Chaves m4v, Aula de Programacao mp4, Serie Completa...">
+                <button onclick="buscarNoDrivePublico()">Minar no Google</button>
+            </div>
+        </div>
+
+        <!-- PASSO 2: REPRODUTOR VIA CSS -->
+        <div class="player-section">
+            <h3>Passo 2: Executar Link Encontrado</h3>
+            <p>Acheu o link do vídeo? Cole a URL dele abaixo para aplicar o CSS e reproduzir:</p>
+            <div class="input-group">
+                <input type="text" id="driveUrl" placeholder="Cole aqui o link (Ex: https://google.com)">
+                <button onclick="carregarVideo()" style="background-color: #00f076; color: #000;">Injetar Player</button>
+            </div>
+
+            <!-- O player renderizado com CSS dinâmico -->
+            <div class="player-wrapper" id="playerWrapper">
+                <iframe id="videoIframe" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            </div>
+            <div id="placeholderText" class="status-msg">Nenhum vídeo carregado no momento.</div>
+        </div>
+    </div>
+
+    <script>
+        // Função do Motor de Busca que automatiza o Google Dork
+        function buscarNoDrivePublico() {
+            const palavraChave = document.getElementById('keyword').value.trim();
+            if (!palavraChave) {
+                alert('Por favor, digite o nome de um vídeo ou formato!');
+                return;
+            }
+
+            // Monta o dork perfeito focado em vídeos do Drive
+            // Exemplo: site:drive.google.com "chaves" (mp4|m4v|mkv)
+            const dorkQuery = `site:drive.google.com "${palavraChave}" (mp4|m4v|mkv|avi)`;
+            
+            // Abre a busca pública direto no Google em uma nova aba
+            const googleSearchUrl = `https://google.com{encodeURIComponent(dorkQuery)}`;
+            window.open(googleSearchUrl, '_blank');
+        </script>
+        <script>
+        // Função que pega o link bruto público e o adapta para rodar no seu HTML/CSS
+        function carregarVideo() {
+            let urlInput = document.getElementById('driveUrl').value.trim();
+            const playerWrapper = document.getElementById('playerWrapper');
+            const videoIframe = document.getElementById('videoIframe');
+            const placeholderText = document.getElementById('placeholderText');
+
+            if (!urlInput) {
+                alert('Insira uma URL válida do Google Drive pública!');
+                return;
+            }
+
+            // Expressão regular para capturar o ID único do vídeo na URL pública
+            const regExp = /\/file\/d\/([^/]+)/;
+            const matches = urlInput.match(regExp);
+
+            if (matches && matches[1]) {
+                const videoId = matches[1];
+                // Transforma o link de visualização em link de incorporação (/preview)
+                const embedUrl = `https://google.com{videoId}/preview`;
+
+                // Aplica ao Iframe e ativa o container CSS
+                videoIframe.src = embedUrl;
+                playerWrapper.style.display = 'block';
+                placeholderText.style.display = 'none';
+            } else {
+                alert('Formato de link do Drive inválido. Certifique-se de que ele contém "/file/d/ID_DO_ARQUIVO".');
+            }
+        }
+    </script>
+</body>
+</html>
+
